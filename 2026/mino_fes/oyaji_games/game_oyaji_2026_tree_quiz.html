@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>おやじクイズ ～クエスト前の頭の体操～</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Zen+Marugothic:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --correct:#4caf50;--wrong:#ef5350;--accent:#ff7043;
+  --text:#2a2a2a;--textl:#666;
+  --card:rgba(255,255,255,0.93);--border:rgba(0,0,0,0.11);
+  --shadow:0 3px 14px rgba(0,0,0,0.13);
+}
+html,body{height:100%;width:100%;overflow:hidden;background:#1a1a2e;}
+body{font-family:'Zen Marugothic','Noto Sans JP',sans-serif;display:flex;align-items:center;justify-content:center;}
+
+#app{
+  width:100%;max-width:430px;height:100vh;max-height:900px;
+  display:flex;flex-direction:column;overflow:hidden;
+  position:relative;background:#f0f0ec;
+}
+
+/* TITLE */
+#title-area{
+  background:var(--card);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:5px 12px 4px;flex-shrink:0;
+  border-bottom:1px solid var(--border);
+}
+#title-text{text-align:left;}
+#title-area h1{font-size:15px;font-weight:700;color:var(--text);letter-spacing:.04em;}
+#title-area p{font-size:10px;color:var(--textl);}
+.hearts{font-size:14px;letter-spacing:1px;flex-shrink:0;}
+
+/* DOTS inside question box */
+#progress-dots{
+  display:flex;gap:6px;margin-bottom:5px;
+}
+.dot{width:8px;height:8px;border-radius:50%;background:#ccc;transition:background .3s,transform .2s;flex-shrink:0;}
+.dot.ok{background:var(--correct);transform:scale(1.15);}
+.dot.ng{background:var(--wrong);}
+.dot.now{background:#888;}
+
+/* SCENE — bigger now */
+#scene{
+  width:100%;height:230px;flex-shrink:0;
+  position:relative;overflow:hidden;
+}
+#scene canvas{position:absolute;inset:0;width:100%;height:100%;}
+#scene svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+
+/* QUIZ — compact */
+#quiz-area{
+  flex:1;padding:5px 11px 6px;
+  display:flex;flex-direction:column;gap:4px;
+  overflow:hidden;min-height:0;
+}
+#question-box{
+  background:var(--card);border-radius:12px;
+  border:1px solid var(--border);box-shadow:var(--shadow);
+  padding:7px 12px 8px;flex-shrink:0;
+}
+#question-text{font-size:14px;line-height:1.5;color:var(--text);font-weight:500;}
+
+.choice-btn{
+  width:100%;background:var(--card);
+  border:1px solid var(--border);border-radius:10px;
+  padding:7px 12px;font-size:13px;font-family:inherit;
+  text-align:left;cursor:pointer;color:var(--text);
+  display:flex;align-items:flex-start;gap:9px;line-height:1.35;
+  transition:background .12s,transform .1s;
+  box-shadow:0 1px 5px rgba(0,0,0,.06);flex-shrink:0;
+}
+.choice-btn:hover{background:#f5f5f0;}
+.choice-btn:active{transform:scale(.98);}
+.choice-btn.correct{background:#e8f5e9;border-color:var(--correct);color:#2e7d32;box-shadow:0 0 0 2px rgba(76,175,80,.2);}
+.choice-btn.wrong{background:#ffebee;border-color:var(--wrong);color:#c62828;box-shadow:0 0 0 2px rgba(239,83,80,.18);}
+.choice-label{font-weight:700;min-width:18px;color:var(--accent);font-size:13px;}
+.choice-btn.correct .choice-label{color:var(--correct);}
+.choice-btn.wrong .choice-label{color:var(--wrong);}
+
+/* MSG */
+#msg-area{
+  text-align:center;font-size:12px;font-weight:700;
+  min-height:18px;color:var(--textl);
+  padding:1px 16px 2px;flex-shrink:0;background:#f0f0ec;
+  letter-spacing:.03em;
+}
+#msg-area.ok{color:var(--correct);}
+#msg-area.ng{color:var(--wrong);}
+
+/* RESULT */
+#result-area{
+  flex:1;padding:10px 18px 14px;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;text-align:center;background:#f0f0ec;min-height:0;
+}
+#result-icon{font-size:44px;line-height:1;animation:popIn .4s cubic-bezier(.34,1.56,.64,1);}
+#result-title{font-size:22px;font-weight:700;color:var(--text);}
+#result-text{font-size:13px;color:var(--textl);line-height:1.85;white-space:pre-line;}
+#result-btn{
+  background:var(--accent);border:none;border-radius:50px;
+  padding:10px 32px;font-size:15px;font-family:inherit;font-weight:700;
+  cursor:pointer;color:#fff;letter-spacing:.04em;
+  box-shadow:0 4px 14px rgba(255,112,67,.35);
+  transition:transform .12s;margin-top:6px;flex-shrink:0;
+}
+#result-btn:hover{transform:scale(1.04);}
+#result-btn:active{transform:scale(.97);}
+
+@keyframes popIn{0%{transform:scale(.3);opacity:0;}100%{transform:scale(1);opacity:1;}}
+@keyframes butterflyAnim{
+  0%{transform:translate(0,0) rotate(-5deg);}
+  25%{transform:translate(14px,-13px) rotate(9deg);}
+  50%{transform:translate(28px,-4px) rotate(-5deg);}
+  75%{transform:translate(16px,-20px) rotate(11deg);}
+  100%{transform:translate(0,0) rotate(-5deg);}
+}
+@keyframes birdFly{0%{transform:translateX(-35px);}100%{transform:translateX(430px);}}
+@keyframes rbFade{0%{opacity:0;}100%{opacity:.75;}}
+@keyframes evilGrow{0%{transform:scaleY(0);transform-origin:bottom;}100%{transform:scaleY(1);transform-origin:bottom;}}
+@keyframes evilPulse{0%,100%{opacity:.7;}50%{opacity:1;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="title-area">
+    <div id="title-text">
+      <h1>おやじクイズ</h1>
+      <p>～クエスト前の頭の体操～</p>
+    </div>
+    <span class="hearts" id="hearts">❤️❤️❤️</span>
+  </div>
+  <div id="scene">
+    <canvas id="cv"></canvas>
+    <svg id="fx" viewBox="0 0 390 230" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+  <div id="quiz-area">
+    <div id="question-box">
+      <div id="progress-dots"></div>
+      <div id="question-text"></div>
+    </div>
+    <div id="choices"></div>
+  </div>
+  <div id="msg-area"></div>
+  <div id="result-area">
+    <div id="result-icon"></div>
+    <div id="result-title"></div>
+    <div id="result-text"></div>
+    <button id="result-btn">もう一度！</button>
+  </div>
+</div>
+
+<script>
+const ALL_Q=[
+  {q:"日吉のある横浜市の気候はどれ？",c:["温帯(おんたい)","熱帯(ねったい)","寒帯(かんたい)"],a:0},
+  {q:"綱島は昔、何がたくさんあった？",c:["温泉(おんせん)","金山(きんざん)","洞窟(どうくつ)"],a:0},
+  {q:"日吉駅ができたのはいつごろ？",c:["1920年代","1950年代","1980年代"],a:0},
+  {q:"港北区でよくおこる自然災害は？",c:["火山噴火(ふんか)","台風による大雨","砂嵐(すなあらし)"],a:1},
+  {q:"綱島が「桃の名産地」だったのはいつごろ？",c:["江戸時代","明治～昭和初期","平成"],a:1},
+  {q:"日吉の地名の由来とされるものは？",c:["日がよく当たる丘","神社の名前","昔の武将の名前"],a:1},
+  {q:"港北区で地震のときに注意が必要なのは？",c:["液状化(えきじょうか)","なだれ","洪水(こうずい)"],a:0},
+  {q:"日吉駅前の並木道に多い木は？",c:["イチョウ","サクラ","マツ"],a:0},
+  {q:"綱島の温泉は何色の湯で有名？",c:["透明","黒","白"],a:1},
+  {q:"港北区の地形の特徴は？",c:["山が多い","平地と丘が多い","砂漠のように平ら"],a:1},
+  {q:"日吉・綱島の公園でよく見られる鳥は？",c:["ハト","ペンギン","ワシ"],a:0},
+  {q:"綱島公園で春に咲く花として有名なのは？",c:["チューリップ","サクラ","ヒマワリ"],a:1},
+  {q:"港北区の川沿いでよく見られる昆虫は？",c:["トンボ","サソリ","ホタルイカ"],a:0},
+  {q:"日吉の街路樹として多いのは？",c:["ケヤキ","リンゴの木","バナナの木"],a:0},
+  {q:"大倉山公園で有名な植物は？",c:["梅(うめ)","サボテン","竹"],a:0},
+  {q:"港北区の住宅街でよく見かける動物は？",c:["タヌキ","キリン","アザラシ"],a:0},
+  {q:"鶴見川(つるみがわ)にすむ魚として正しいのは？",c:["コイ","サメ","マンボウ"],a:0},
+  {q:"綱島の桃畑が多かったころ、よく育った理由は？",c:["土が肥(こ)えていた","雪が多かった","砂ばくだった"],a:0},
+  {q:"港北区の公園で見られるリスの種類は？",c:["ニホンリス","シマリス","リスはいない"],a:2},
+  {q:"日吉・綱島で秋に多い植物の変化は？",c:["葉が赤や黄色に色づく","花が満開になる","雪が積もる"],a:0},
+  {q:"ごみを出すときに大切なのは？",c:["分別(ぶんべつ)する","好きな日に出す","燃やしてから出す"],a:0},
+  {q:"鶴見川の水をきれいに保つためにできることは？",c:["川に物をすてない","魚を全部とる","川を歩く"],a:0},
+  {q:"地震のとき、まずするべき行動は？",c:["外に走り出す","机の下にかくれる","スマホで動画をとる"],a:1},
+  {q:"避難所(ひなんじょ)として使われる場所は？",c:["学校や公園","映画館","遊園地"],a:0},
+  {q:"熱中症(ねっちゅうしょう)をふせぐために大切なのは？",c:["水分をとる","走り続ける","厚着(あつぎ)をする"],a:0},
+  {q:"港北区でよく行われる環境活動は？",c:["川や公園の清掃(せいそう)","山の木を全部切る","焼き畑農業"],a:0},
+  {q:"非常持ち出し袋に入れるべきものは？",c:["水や食料","ゲーム機だけ","大きな家具"],a:0},
+  {q:"台風が近づいたときに気をつけることは？",c:["川に近づかない","外で遊ぶ","窓を開ける"],a:0},
+  {q:"環境を守るためにできることは？",c:["リサイクル","ごみをふやす","電気をつけっぱなし"],a:0},
+  {q:"地域の防災訓練(ぼうさいくんれん)に参加する理由は？",c:["災害時に安全に行動できるようにするため","おかしをもらうため","走り回るため"],a:0},
+];
+const CHAPTERS=[
+  {label:"第1章",s:0,e:10,pick:5,need:3},
+  {label:"第2章",s:10,e:20,pick:5,need:3},
+  {label:"第3章",s:20,e:30,pick:5,need:3},
+];
+
+// ═══ CANVAS ═══
+const cv=document.getElementById('cv');
+const c=cv.getContext('2d');
+const W=390,H=230;
+cv.width=W; cv.height=H;
+const GY=182; // ground y
+
+function seeded(seed){let s=seed%2147483647;return()=>{s=s*16807%2147483647;return(s-1)/2147483646;};}
+function lerp(a,b,t){return a+(b-a)*t;}
+function lerpHex(h1,h2,t){
+  const p=s=>[parseInt(s.slice(1,3),16),parseInt(s.slice(3,5),16),parseInt(s.slice(5,7),16)];
+  const[a,b]=[p(h1),p(h2)];
+  return '#'+a.map((v,i)=>Math.round(lerp(v,b[i],t)).toString(16).padStart(2,'0')).join('');
+}
+function cloud(cx,cy,r,col,alpha){
+  c.save();c.globalAlpha=alpha;c.fillStyle=col;
+  c.beginPath();c.ellipse(cx,cy,r,r*.48,0,0,Math.PI*2);c.fill();
+  c.beginPath();c.ellipse(cx+r*.42,cy-r*.33,r*.65,r*.44,0,0,Math.PI*2);c.fill();
+  c.restore();
+}
+
+function drawScene(n,goPhase){
+  c.clearRect(0,0,W,H);
+  if(goPhase!==undefined){drawGameOver(goPhase);return;}
+  n=Math.max(0,Math.min(9,n));
+
+  // SKY 0→3: gray→blue
+  const skyT=Math.min(n/3,1);
+  const sky=skyT<.5?lerpHex('#909090','#7a9ab0',skyT*2):lerpHex('#7a9ab0','#87ceeb',(skyT-.5)*2);
+  c.fillStyle=sky;c.fillRect(0,0,W,H);
+
+  // CLOUDS n>=1
+  if(n>=1){
+    const ct=Math.min((n-1)/2,1);
+    cloud(75,48,33,'#c8c8c8',ct);
+    cloud(103,36,22,'#dadada',ct);
+  }
+  if(n>=2){cloud(198,42,40,'#fff',1);cloud(222,30,28,'#fff',1);}
+  if(n>=3){cloud(314,52,30,'#fff',1);cloud(132,43,24,'#eee',.85);}
+
+  // RAIN n=1-3
+  if(n>=1&&n<3){
+    const rt=n===1?.65:.35;
+    c.save();c.globalAlpha=rt;c.strokeStyle='#5599bb';c.lineWidth=1.2;
+    for(let i=0;i<24;i++){const x=18+i*15;c.beginPath();c.moveTo(x,80);c.lineTo(x-3,108);c.stroke();}
+    c.restore();
+  }
+
+  // GROUND 0-3 gray, 3-6 → green, 6+ full green
+  const gT=Math.max(0,Math.min((n-3)/3,1));
+  c.fillStyle=lerpHex('#7a7a7a','#3aaa1a',gT);
+  c.fillRect(0,GY,W,H-GY);
+
+  // GRASS n=3-5
+  if(n>=3){
+    const rng=seeded(42);
+    const cnt=n===3?14:n===4?42:75;
+    const sp=n===3?120:n===4?260:W-16;
+    const sx=n===3?135:n===4?65:8;
+    for(let i=0;i<cnt;i++){
+      const x=sx+rng()*sp;
+      const bh=12+rng()*15;const bw=2+rng()*2;
+      c.fillStyle=lerpHex('#2e6a1e','#3aaa2a',rng());
+      c.beginPath();
+      c.moveTo(x,GY);
+      c.quadraticCurveTo(x+(rng()-.5)*8,GY-bh*.6,x+(rng()-.5)*5,GY-bh);
+      c.quadraticCurveTo(x+bw,GY-bh*.6,x+bw,GY);
+      c.fill();
+    }
+  }
+
+  // FLOWERS n=6-9
+  if(n>=6){
+    const rng=seeded(77);
+    const cnt=n===6?13:n===7?30:n===8?55:82;
+    const sp=n===6?175:n===7?275:W-16;
+    const sx=n===6?108:n===7?58:8;
+    const fc=['#ff4499','#ff8800','#ffcc00','#ee44cc','#ff6655','#ffaacc'];
+    for(let i=0;i<cnt;i++){
+      const x=sx+rng()*sp;const y=GY+4+rng()*15;const r=5+rng()*4;
+      c.fillStyle=fc[Math.floor(rng()*fc.length)];
+      c.beginPath();c.ellipse(x,y,r,r*.68,0,0,Math.PI*2);c.fill();
+      c.fillStyle='#ffee66';
+      c.beginPath();c.ellipse(x,y,r*.33,r*.24,0,0,Math.PI*2);c.fill();
+    }
+  }
+
+  // TREE n=6-9
+  if(n>=6){
+    const tx=195;
+    const tH=n===6?30:n===7?56:n===8?82:108;
+    const ty=GY-tH;const tw=Math.max(5,tH*.1);
+    c.fillStyle='#7a4a1a';c.fillRect(tx-tw/2,ty+tH*.55,tw,tH*.46);
+    [{yf:.55,rf:.47,col:'#2a7a1a'},{yf:.32,rf:.37,col:'#3aaa2a'},{yf:.14,rf:.27,col:'#4abb2a'}].forEach(l=>{
+      c.fillStyle=l.col;
+      c.beginPath();c.ellipse(tx,ty+tH*l.yf,tH*l.rf,tH*l.rf*.84,0,0,Math.PI*2);c.fill();
+    });
+  }
+}
+
+// ── EVIL TREE (game over) ──
+function drawGameOver(phase){
+  c.fillStyle='#0e0e1c';c.fillRect(0,0,W,H);
+  // eerie ground with purplish haze
+  c.fillStyle='#1a1428';c.fillRect(0,GY,W,H-GY);
+  // ground fog
+  const fog=c.createLinearGradient(0,GY-30,0,GY+20);
+  fog.addColorStop(0,'rgba(60,20,80,0)');
+  fog.addColorStop(1,'rgba(60,20,80,0.45)');
+  c.fillStyle=fog;c.fillRect(0,GY-30,W,50);
+  // eerie glowing sky streaks
+  c.save();c.globalAlpha=.12;c.strokeStyle='#aa44ff';c.lineWidth=40;
+  c.beginPath();c.moveTo(0,H*.3);c.lineTo(W,H*.7);c.stroke();
+  c.beginPath();c.moveTo(W*.4,0);c.lineTo(W*.6,H);c.stroke();
+  c.restore();
+
+  if(phase>=1){
+    drawEvilTree(195,GY,Math.min(phase,1)*118);
+    // glowing red eyes in canopy
+    if(phase>=2){
+      [[182,GY-95],[210,GY-100],[196,GY-78]].forEach(([ex,ey])=>{
+        const grd=c.createRadialGradient(ex,ey,0,ex,ey,8);
+        grd.addColorStop(0,'rgba(255,60,0,0.95)');
+        grd.addColorStop(1,'rgba(180,0,0,0)');
+        c.fillStyle=grd;c.beginPath();c.ellipse(ex,ey,7,4,0,0,Math.PI*2);c.fill();
+      });
+    }
+  }
+  // dark thorny branches scattered
+  if(phase>=1){
+    c.save();c.strokeStyle='#1e1028';c.lineWidth=2;c.globalAlpha=.7;
+    [[40,GY-8,70,GY-38],[320,GY-5,290,GY-42],[10,GY-20,55,GY-55],[360,GY-15,310,GY-50]].forEach(([x1,y1,x2,y2])=>{
+      c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();
+      c.beginPath();c.moveTo((x1+x2)/2,(y1+y2)/2);c.lineTo((x1+x2)/2+15,(y1+y2)/2-18);c.stroke();
+    });
+    c.restore();
+  }
+}
+
+function drawEvilTree(tx,gy,tH){
+  if(tH<=0)return;
+  // trunk — gnarled
+  c.fillStyle='#1a0a05';
+  c.beginPath();
+  c.moveTo(tx-7,gy);
+  c.bezierCurveTo(tx-12,gy-tH*.3,tx-5,gy-tH*.5,tx-4,gy-tH*.6);
+  c.bezierCurveTo(tx-2,gy-tH*.75,tx+3,gy-tH*.65,tx+6,gy-tH*.7);
+  c.bezierCurveTo(tx+10,gy-tH*.5,tx+8,gy-tH*.3,tx+7,gy);
+  c.closePath();c.fill();
+
+  // dark canopy — jagged crown
+  const layers=[
+    {yf:.72,r1:tH*.52,r2:tH*.42,col:'#150e1e'},
+    {yf:.48,r1:tH*.44,r2:tH*.35,col:'#1c1228'},
+    {yf:.28,r1:tH*.35,r2:tH*.28,col:'#231630'},
+  ];
+  layers.forEach(l=>{
+    const cy=gy-tH*l.yf;
+    c.fillStyle=l.col;
+    // spiky jagged crown via polygon
+    const spikes=12;const pts=[];
+    for(let i=0;i<spikes*2;i++){
+      const ang=(i/spikes/2)*Math.PI*2-Math.PI/2;
+      const r=i%2===0?l.r1:l.r1*(0.5+Math.random()*.2);
+      pts.push([tx+Math.cos(ang)*r*1.1,cy+Math.sin(ang)*r*.82]);
+    }
+    c.beginPath();c.moveTo(pts[0][0],pts[0][1]);
+    pts.forEach(p=>c.lineTo(p[0],p[1]));
+    c.closePath();c.fill();
+  });
+
+  // twisted bare branches
+  c.save();c.strokeStyle='#120820';c.lineWidth=2.5;
+  const branchData=[
+    [tx,gy-tH*.55,tx-tH*.28,gy-tH*.72],
+    [tx,gy-tH*.55,tx+tH*.3,gy-tH*.7],
+    [tx,gy-tH*.38,tx-tH*.22,gy-tH*.52],
+    [tx,gy-tH*.38,tx+tH*.25,gy-tH*.5],
+    [tx-tH*.2,gy-tH*.65,tx-tH*.38,gy-tH*.58],
+    [tx+tH*.22,gy-tH*.63,tx+tH*.4,gy-tH*.56],
+  ];
+  branchData.forEach(([x1,y1,x2,y2])=>{
+    c.beginPath();c.moveTo(x1,y1);
+    c.quadraticCurveTo((x1+x2)/2+(-8+Math.random()*16),(y1+y2)/2+(-8+Math.random()*16),x2,y2);
+    c.stroke();
+    // thorn tips
+    c.lineWidth=1;
+    c.beginPath();c.moveTo(x2,y2);c.lineTo(x2+(x2-x1)*.15,y2+(y2-y1)*.15+5);c.stroke();
+    c.lineWidth=2.5;
+  });
+  c.restore();
+
+  // purple mist around base
+  const mist=c.createRadialGradient(tx,gy,0,tx,gy,tH*.6);
+  mist.addColorStop(0,'rgba(80,20,100,0.35)');
+  mist.addColorStop(1,'rgba(40,0,60,0)');
+  c.fillStyle=mist;c.beginPath();c.ellipse(tx,gy,tH*.7,tH*.2,0,0,Math.PI*2);c.fill();
+}
+
+// ═══ SVG FX ═══
+const fx=document.getElementById('fx');
+function NS(t){return document.createElementNS('http://www.w3.org/2000/svg',t);}
+function clearFx(){fx.innerHTML='';}
+
+function showRainbow(){
+  clearFx();
+  const cols=['#ff0000','#ff8800','#ffff00','#00cc00','#0066ff','#8800ff'];
+  cols.forEach((col,i)=>{
+    const p=NS('path');const off=i*9;
+    p.setAttribute('d',`M${5+off} 188 Q195 ${10+off} ${385-off} 188`);
+    p.setAttribute('fill','none');p.setAttribute('stroke',col);
+    p.setAttribute('stroke-width','5.5');p.setAttribute('opacity','0');
+    p.style.animation=`rbFade .5s ease-out ${i*.08}s forwards`;
+    fx.appendChild(p);
+  });
+}
+
+function showButterflies(){
+  clearFx();
+  const pos=[[100,120],[188,72],[258,105],[142,148],[218,130]];
+  const cols=[['#ff99cc','#ff44aa'],['#ffcc44','#ff8800'],['#88ccff','#2288ee'],['#cc99ff','#8844ee'],['#aaff99','#33bb22']];
+  pos.forEach(([bx,by],i)=>{
+    const g=NS('g');
+    g.setAttribute('transform',`translate(${bx},${by})`);
+    g.style.animation=`butterflyAnim ${2.2+i*.38}s ease-in-out ${i*.3}s infinite`;
+    const[c1,c2]=cols[i%5];
+    const wL=NS('ellipse');wL.setAttribute('cx','-7');wL.setAttribute('cy','-3');wL.setAttribute('rx','9');wL.setAttribute('ry','6');wL.setAttribute('fill',c1);wL.setAttribute('opacity','.88');
+    const wR=NS('ellipse');wR.setAttribute('cx','7');wR.setAttribute('cy','-3');wR.setAttribute('rx','9');wR.setAttribute('ry','6');wR.setAttribute('fill',c2);wR.setAttribute('opacity','.88');
+    const bd=NS('ellipse');bd.setAttribute('cx','0');bd.setAttribute('cy','0');bd.setAttribute('rx','2');bd.setAttribute('ry','5');bd.setAttribute('fill','#444');
+    g.appendChild(wL);g.appendChild(wR);g.appendChild(bd);fx.appendChild(g);
+  });
+}
+
+function showBirds(){
+  clearFx();
+  for(let i=0;i<5;i++){
+    const by=32+i*24;const g=NS('g');
+    g.setAttribute('transform',`translate(-30,${by})`);
+    g.style.animation=`birdFly ${3+i*.4}s linear ${i*.55}s infinite`;
+    const p=NS('path');
+    p.setAttribute('d',`M0,0 C-7,-6,-14,0,-20,0 M0,0 C7,-6,14,0,20,0`);
+    p.setAttribute('stroke','#334');p.setAttribute('stroke-width','2');
+    p.setAttribute('fill','none');p.setAttribute('stroke-linecap','round');
+    g.appendChild(p);fx.appendChild(g);
+  }
+}
+
+// ═══ AUDIO ═══
+function mkA(){try{return new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}
+function playCorrect(){const a=mkA();if(!a)return;[523,659,784,1047].forEach((f,i)=>{const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;o.type='sine';const t=a.currentTime+i*.1;g.gain.setValueAtTime(.2,t);g.gain.exponentialRampToValueAtTime(.001,t+.35);o.start(t);o.stop(t+.35);});}
+function playWrong(){const a=mkA();if(!a)return;[280,220].forEach((f,i)=>{const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;o.type='sawtooth';const t=a.currentTime+i*.18;g.gain.setValueAtTime(.13,t);g.gain.exponentialRampToValueAtTime(.001,t+.45);o.start(t);o.stop(t+.45);});}
+function playEvil(){const a=mkA();if(!a)return;[180,140,100,70].forEach((f,i)=>{const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;o.type='square';const t=a.currentTime+i*.22;g.gain.setValueAtTime(.1,t);g.gain.exponentialRampToValueAtTime(.001,t+.6);o.start(t);o.stop(t+.6);});}
+function playClear(){const a=mkA();if(!a)return;[523,659,784,880,1047,1175].forEach((f,i)=>{const o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;o.type='sine';const t=a.currentTime+i*.12;g.gain.setValueAtTime(.17,t);g.gain.exponentialRampToValueAtTime(.001,t+.45);o.start(t);o.stop(t+.45);});}
+
+// ═══ STATE ═══
+let state={};
+function shuffle(a){const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
+function pickQ(s,e,n){return shuffle(ALL_Q.slice(s,e)).slice(0,n);}
+
+// ═══ RENDER ═══
+function renderScene(){
+  if(state.gameOver){drawScene(0,state.goPhase||0);}
+  else{drawScene(state.totalCorrect);clearFx();}
+}
+function renderStatus(){
+  let h='';for(let i=0;i<3;i++)h+=i<state.lives?'❤️':'🖤';
+  document.getElementById('hearts').textContent=h;
+}
+function renderDots(){
+  const el=document.getElementById('progress-dots');
+  el.innerHTML='';
+  state.questions.forEach((_,i)=>{
+    const d=document.createElement('div');d.className='dot';
+    if(i<state.qIdx)d.classList.add(state.chapterAnswers[i]==='c'?'ok':'ng');
+    else if(i===state.qIdx)d.classList.add('now');
+    el.appendChild(d);
+  });
+}
+function renderQuestion(){
+  if(state.done)return;
+  const q=state.questions[state.qIdx];
+  document.getElementById('question-text').textContent=q.q;
+  const ce=document.getElementById('choices');ce.innerHTML='';
+  ['Ａ','Ｂ','Ｃ'].forEach((lb,i)=>{
+    const b=document.createElement('button');b.className='choice-btn';
+    b.innerHTML=`<span class="choice-label">${lb}</span><span>${q.c[i]}</span>`;
+    b.onclick=()=>answer(i);ce.appendChild(b);
+  });
+  setMsg('','');
+}
+function setMsg(t,cls){const m=document.getElementById('msg-area');m.textContent=t;m.className=cls;}
+function showResult(icon,title,text){
+  document.getElementById('quiz-area').style.display='none';
+  document.getElementById('msg-area').style.display='none';
+  const ra=document.getElementById('result-area');
+  ra.style.display='flex';
+  document.getElementById('result-icon').textContent=icon;
+  document.getElementById('result-title').textContent=title;
+  document.getElementById('result-text').textContent=text;
+  // ensure button is always visible
+  document.getElementById('result-btn').style.display='block';
+}
+
+// ═══ GAME LOGIC ═══
+function answer(idx){
+  if(state.done)return;
+  const q=state.questions[state.qIdx];
+  document.querySelectorAll('.choice-btn').forEach(b=>b.onclick=null);
+  if(idx===q.a){
+    playCorrect();
+    document.querySelectorAll('.choice-btn')[idx].classList.add('correct');
+    state.chapterCorrect++;state.totalCorrect++;
+    state.consecutiveWrong=0;state.chapterAnswers.push('c');
+    renderScene();setMsg('⭕ 正解！すごい！','ok');
+  } else {
+    playWrong();
+    document.querySelectorAll('.choice-btn')[idx].classList.add('wrong');
+    document.querySelectorAll('.choice-btn')[q.a].classList.add('correct');
+    state.lives--;state.consecutiveWrong++;state.streak=false;
+    state.chapterAnswers.push('w');
+    renderStatus();
+    setMsg('❌ 不正解…答えは'+['Ａ','Ｂ','Ｃ'][q.a]+'だよ','ng');
+  }
+  state.qIdx++;renderDots();
+  if(state.consecutiveWrong>=3){setTimeout(triggerGameOver,750);return;}
+  const ch=CHAPTERS[state.chapter];
+  const chDone=state.qIdx>=ch.pick||state.chapterCorrect>=ch.need;
+  setTimeout(()=>{
+    if(chDone){
+      if(state.chapterCorrect>=ch.need){
+        if(state.chapter<2)advanceChapter();else triggerClear();
+      } else triggerFail();
+    } else renderQuestion();
+  },950);
+}
+
+function advanceChapter(){
+  state.chapter++;
+  const ch=CHAPTERS[state.chapter];
+  state.questions=pickQ(ch.s,ch.e,ch.pick);
+  state.qIdx=0;state.chapterCorrect=0;state.chapterAnswers=[];
+  renderScene();renderQuestion();
+}
+
+function triggerGameOver(){
+  state.done=true;state.gameOver=true;state.goPhase=0;
+  playEvil();
+  // reset scene to gray first
+  drawScene(0,0);
+  // grow evil tree over time
+  let growProgress=0;
+  const growInterval=setInterval(()=>{
+    growProgress+=0.04;
+    if(growProgress>=1){growProgress=1;clearInterval(growInterval);}
+    state.goPhase=growProgress<.3?0:growProgress<.7?1:2;
+    drawGameOver(growProgress);
+  },40);
+  setTimeout(()=>{
+    showResult('🌑','ゲームオーバー','3問連続で間違えてしまった…\n禍々しい力が自然を飲み込んだ。\n\n5/16はもっと楽しい謎を\n用意しているよ！');
+  },2400);
+}
+
+function drawGameOver(progress){
+  c.clearRect(0,0,W,H);
+  c.fillStyle=lerpHex('#0e0e1c','#0e0e1c',1);c.fillRect(0,0,W,H);
+  c.fillStyle='#1a1428';c.fillRect(0,GY,W,H-GY);
+  // fog
+  const fog=c.createLinearGradient(0,GY-40,0,GY+25);
+  fog.addColorStop(0,'rgba(60,20,80,0)');
+  fog.addColorStop(1,`rgba(60,20,80,${progress*.5})`);
+  c.fillStyle=fog;c.fillRect(0,GY-40,W,65);
+  // sky streaks
+  c.save();c.globalAlpha=progress*.15;c.strokeStyle='#aa44ff';c.lineWidth=45;
+  c.beginPath();c.moveTo(0,H*.3);c.lineTo(W,H*.7);c.stroke();
+  c.restore();
+  // evil tree grows
+  drawEvilTree(195,GY,progress*115);
+  // eyes appear after 70%
+  if(progress>.7){
+    const ep=(progress-.7)/.3;
+    [[182,GY-92],[210,GY-97],[196,GY-75]].forEach(([ex,ey])=>{
+      const grd=c.createRadialGradient(ex,ey,0,ex,ey,8);
+      grd.addColorStop(0,`rgba(255,60,0,${ep*.9})`);
+      grd.addColorStop(1,'rgba(180,0,0,0)');
+      c.fillStyle=grd;c.beginPath();c.ellipse(ex,ey,7,4,0,0,Math.PI*2);c.fill();
+    });
+  }
+  // thorny branches
+  c.save();c.strokeStyle='#1e1028';c.lineWidth=2;c.globalAlpha=progress*.65;
+  [[40,GY-8,70,GY-38],[320,GY-5,290,GY-42],[10,GY-20,55,GY-55],[360,GY-15,310,GY-50]].forEach(([x1,y1,x2,y2])=>{
+    c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();
+    c.beginPath();c.moveTo((x1+x2)/2,(y1+y2)/2);c.lineTo((x1+x2)/2+15,(y1+y2)/2-18);c.stroke();
+  });
+  c.restore();
+}
+
+function triggerClear(){
+  state.done=true;
+  playClear();
+  renderScene();
+  const surprises=[
+    {type:'rainbow',icon:'🌈',text:'空に大きな虹がかかった！！'},
+    {type:'butterfly',icon:'🦋',text:'チョウたちが舞い踊った！！'},
+    {type:'bird',icon:'🐦',text:'鳥たちが羽ばたいた！！'},
+  ];
+  if(state.streak){
+    const s=surprises[Math.floor(Math.random()*3)];
+    setTimeout(()=>{
+      if(s.type==='rainbow')showRainbow();
+      else if(s.type==='butterfly')showButterflies();
+      else showBirds();
+    },300);
+    setTimeout(()=>{
+      showResult(s.icon,'パーフェクト！！',s.text+'\n\nクリア！自然が戻ったよ！！\n\n5/16はもっと楽しい謎を\n用意しているよ');
+    },2400);
+  } else {
+    setTimeout(()=>{
+      showResult('🌿','クリア！','自然が戻ったよ！！\n\n5/16はもっと楽しい謎を\n用意しているよ');
+    },600);
+  }
+}
+
+function triggerFail(){
+  state.done=true;
+  showResult('🌱','おしい！','もう少しだったよ！\n頑張ってもっと自然を戻してね。\n\n5/16はもっと楽しい謎を\n用意しているよ');
+}
+
+function initGame(){
+  clearFx();
+  const ch=CHAPTERS[0];
+  state={
+    chapter:0,questions:pickQ(ch.s,ch.e,ch.pick),
+    qIdx:0,chapterCorrect:0,totalCorrect:0,
+    lives:3,consecutiveWrong:0,
+    chapterAnswers:[],streak:true,
+    gameOver:false,done:false,
+  };
+  document.getElementById('quiz-area').style.display='flex';
+  document.getElementById('msg-area').style.display='';
+  document.getElementById('result-area').style.display='none';
+  renderScene();renderStatus();renderDots();renderQuestion();
+}
+
+document.getElementById('result-btn').onclick=initGame;
+initGame();
+</script>
+</body>
+</html>
