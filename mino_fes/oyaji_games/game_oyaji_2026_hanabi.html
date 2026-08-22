@@ -1,0 +1,444 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>花火（モバイル版）</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --panel-h: 120px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bot: env(safe-area-inset-bottom, 0px);
+  }
+  html, body { margin:0; padding:0; height:100%; overflow:hidden; background:#000; }
+  body {
+    color:#eee; font-family:system-ui,sans-serif;
+    width:100vw;
+    height:100vh; height:100dvh;
+    position:relative;
+  }
+  #stage {
+    position:absolute;
+    top: var(--safe-top);
+    left:0;
+    width:100vw;
+    height: calc(100dvh - var(--panel-h) - var(--safe-top) - var(--safe-bot));
+    background:#000;
+    display:block;
+    touch-action:none;
+    user-select:none;
+  }
+  #panel {
+    position:absolute;
+    left:0; right:0;
+    bottom: var(--safe-bot);
+    height: var(--panel-h);
+    box-sizing:border-box;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:6px; padding:8px 10px;
+    background:#111;
+    border-top:1px solid #333;
+    z-index:10;
+  }
+  #gauge { height:6px; width:80%; max-width:280px; background:#222; border-radius:4px; overflow:hidden; }
+  #gaugeFill { height:100%; width:0%;
+    background:linear-gradient(90deg,#6cf,#ff6,#f80,#f0c);
+    transition: width 0.04s linear; }
+  #typeLabel { font-size:12px; color:#fc6; min-height:16px; text-align:center; padding:0 8px; }
+  #clearBtn {
+    padding:8px 28px; font-size:14px;
+    background:#333; color:#eee; border:1px solid #666; border-radius:6px; cursor:pointer;
+    font-weight:bold;
+  }
+  #clearBtn:active { background:#555; }
+  #info { font-size:10px; color:#888; text-align:center; line-height:1.2; }
+</style>
+</head>
+<body>
+  <canvas id="stage"></canvas>
+  <div id="panel">
+    <div id="gauge"><div id="gaugeFill"></div></div>
+    <div id="typeLabel">長押しで配置 / 短くタップで個別削除</div>
+    <button id="clearBtn">クリア（全消去）</button>
+    <div id="info">押した時間で花火が変わる（最大12秒）??</div>
+  </div>
+<script>
+(() => {
+  const canvas = document.getElementById('stage');
+  const ctx = canvas.getContext('2d');
+  const gaugeFill = document.getElementById('gaugeFill');
+  const typeLabel = document.getElementById('typeLabel');
+
+  function resize() {
+    const r = canvas.getBoundingClientRect();
+    canvas.width  = Math.max(200, Math.floor(r.width));
+    canvas.height = Math.max(200, Math.floor(r.height));
+  }
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', ()=>setTimeout(resize,100));
+
+  let particles = [];
+  let emitters  = [];
+
+  const PALETTE = ['#ff5577','#ffaa33','#ffee55','#55ff88','#55ddff','#aa77ff','#ff77ff','#ffffff'];
+  const rnd = (a=1,b=0) => Math.random()*(a-b)+b;
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+
+  class Particle {
+    constructor(x,y,vx,vy,life,color,size,opts={}){
+      this.x=x; this.y=y; this.vx=vx; this.vy=vy;
+      this.life=life; this.maxLife=life;
+      this.color=color; this.size=size;
+      this.gravity = opts.gravity ?? 0.05;
+      this.drag    = opts.drag    ?? 0.99;
+      this.twinkle = opts.twinkle ?? true;
+      this.shrink  = opts.shrink  ?? true;
+    }
+    update(){
+      this.vx *= this.drag; this.vy *= this.drag;
+      this.vy += this.gravity;
+      this.x += this.vx; this.y += this.vy;
+      this.life--;
+    }
+    draw(ctx){
+      const a = Math.max(0,this.life/this.maxLife);
+      const s = this.shrink ? this.size*a : this.size;
+      let alpha = a;
+      if (this.twinkle) alpha *= 0.5 + 0.5*Math.random();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, Math.max(0.3,s), 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  // ---- エミッター群 ----
+  function makeSparkler(x,y){
+    let phase=0, cycle=140;
+    return { x,y, type:'線香花火', emit(){
+      phase = (phase+1) % cycle;
+      const intensity = Math.sin((phase/cycle)*Math.PI);
+      const n = Math.max(0, Math.floor(intensity*4));
+      for(let i=0;i<n;i++){
+        const ang = Math.random()*Math.PI*2;
+        const sp  = rnd(1.3,0.2)*intensity;
+        particles.push(new Particle(
+          this.x,this.y,Math.cos(ang)*sp,Math.sin(ang)*sp - 0.3,
+          18+Math.random()*20,
+          Math.random()<0.75?'#ffcc66':'#ffffff',
+          rnd(1.6,0.6),
+          {gravity:0.04, drag:0.94}
+        ));
+      }
+      if (intensity>0.3){
+        particles.push(new Particle(
+          this.x,this.y,0,0,4,'#ff6633',2.2+intensity,
+          {gravity:0, drag:1, twinkle:false, shrink:false}
+        ));
+      }
+    }};
+  }
+
+  function makeHandheld(x,y,size){
+    const cfg = {
+      small : {per:3, speed:2.2, life:35, sz:1.2, spread:0.45, color:['#ffee55','#ffffff','#ffaa33']},
+      medium: {per:6, speed:3.3, life:50, sz:1.7, spread:0.55, color:PALETTE},
+      large : {per:10,speed:4.6, life:65, sz:2.1, spread:0.70, color:PALETTE},
+    }[size];
+    const baseAng = Math.random()*Math.PI*2;
+    return { x,y, type:`手持ち花火(${size==='small'?'小':size==='medium'?'中':'大'})`, emit(){
+      for(let i=0;i<cfg.per;i++){
+        const ang = baseAng + rnd(cfg.spread,-cfg.spread);
+        const sp  = cfg.speed*(0.6+Math.random()*0.6);
+        particles.push(new Particle(
+          this.x,this.y,Math.cos(ang)*sp,Math.sin(ang)*sp,
+          cfg.life+Math.random()*20,
+          pick(cfg.color),
+          cfg.sz*(0.7+Math.random()*0.6),
+          {gravity:0.06, drag:0.98}
+        ));
+      }
+      particles.push(new Particle(
+        this.x,this.y,0,0,3,'#ffcc66',cfg.sz*1.4,
+        {gravity:0,drag:1,twinkle:false,shrink:false}
+      ));
+    }};
+  }
+
+  function makeRat(x,y){
+    return {
+      x,y, type:'ねずみ花火',
+      angle: Math.random()*Math.PI*2,
+      speed: 4 + Math.random()*2,
+      cool: 0,
+      emit(){
+        this.angle += rnd(0.35,-0.35);
+        if (--this.cool<=0){ this.angle += rnd(2,-2); this.cool = 20+Math.floor(Math.random()*40); }
+        const sp = this.speed;
+        this.x += Math.cos(this.angle)*sp;
+        this.y += Math.sin(this.angle)*sp;
+        const m=8;
+        if(this.x<m){this.x=m; this.angle=Math.PI-this.angle;}
+        if(this.x>canvas.width-m){this.x=canvas.width-m; this.angle=Math.PI-this.angle;}
+        if(this.y<m){this.y=m; this.angle=-this.angle;}
+        if(this.y>canvas.height-m){this.y=canvas.height-m; this.angle=-this.angle;}
+        for(let i=0;i<8;i++){
+          const a = this.angle + Math.PI + rnd(0.6,-0.6);
+          const s = rnd(4,1.5);
+          particles.push(new Particle(
+            this.x,this.y,Math.cos(a)*s,Math.sin(a)*s,
+            14+Math.random()*14,
+            Math.random()<0.5?'#ffaa33':'#ffee55',
+            1+Math.random()*1.4,
+            {gravity:0.02, drag:0.93}
+          ));
+        }
+        particles.push(new Particle(
+          this.x,this.y,0,0,3,'#ff5522',2.5,
+          {gravity:0,drag:1,twinkle:false,shrink:false}
+        ));
+      }
+    };
+  }
+
+  function makeFountain(x,y,size){
+    const cfg = {
+      small:{per:8,  speed:6,  life:60, sz:1.5, spread:0.22, color:['#ffee55','#ffaa33','#ffffff']},
+      large:{per:20, speed:11, life:110,sz:2.2, spread:0.30, color:PALETTE},
+    }[size];
+    return { x,y, type:`噴出花火(${size==='small'?'小':'大'})`, emit(){
+      for(let i=0;i<cfg.per;i++){
+        const ang = -Math.PI/2 + rnd(cfg.spread,-cfg.spread);
+        const sp  = cfg.speed*(0.75+Math.random()*0.4);
+        particles.push(new Particle(
+          this.x+rnd(2,-2), this.y,
+          Math.cos(ang)*sp, Math.sin(ang)*sp,
+          cfg.life+Math.random()*30,
+          pick(cfg.color),
+          cfg.sz*(0.7+Math.random()*0.6),
+          {gravity:0.12, drag:0.99}
+        ));
+      }
+    }};
+  }
+
+  function makeAerial(x,y,size){
+    const cfg = {
+      small:{rise:9,  count:80,  speed:4,  life:60,  sz:2.0, interval:90,  trail:1},
+      large:{rise:13, count:200, speed:8,  life:110, sz:2.6, interval:130, trail:2},
+    }[size];
+    return {
+      x,y, type:`打ち上げ花火(${size==='small'?'小':'大'})`,
+      shells:[], cool:0,
+      emit(){
+        if (--this.cool<=0){
+          this.cool = cfg.interval + Math.floor(Math.random()*40 - 20);
+          this.shells.push({
+            x:this.x+rnd(20,-20), y:canvas.height,
+            tx:this.x+rnd(80,-80),
+            ty:canvas.height*(0.10+Math.random()*0.30),
+            vy:-cfg.rise,
+            exploded:false, t:0
+          });
+        }
+        for(const s of this.shells){
+          if(!s.exploded){
+            s.y += s.vy;
+            for(let i=0;i<cfg.trail;i++){
+              particles.push(new Particle(
+                s.x+rnd(1,-1), s.y, rnd(0.2,-0.2), rnd(1.2,0.2),
+                18,'#ffdd88',1.5,
+                {gravity:0.02,drag:0.96}
+              ));
+            }
+            if(s.y<=s.ty){
+              s.exploded=true;
+              const c1=pick(PALETTE), c2=pick(PALETTE);
+              for(let i=0;i<cfg.count;i++){
+                const ang = Math.random()*Math.PI*2;
+                const sp  = cfg.speed*(0.4+Math.random()*0.8);
+                particles.push(new Particle(
+                  s.x,s.y,Math.cos(ang)*sp,Math.sin(ang)*sp,
+                  cfg.life+Math.random()*30,
+                  Math.random()<0.5?c1:c2,
+                  cfg.sz*(0.7+Math.random()*0.5),
+                  {gravity:0.05, drag:0.97}
+                ));
+              }
+            }
+          } else { s.t++; }
+        }
+        this.shells = this.shells.filter(s => !(s.exploded && s.t>120));
+      }
+    };
+  }
+
+  function makeNiagara(x,y){
+    return { x,y, type:'ナイアガラ',
+      emit(){
+        const w  = canvas.width*0.85;
+        const x0 = Math.max(10, Math.min(canvas.width-w-10, this.x-w/2));
+        for(let i=0;i<40;i++){
+          const px = x0 + Math.random()*w;
+          particles.push(new Particle(
+            px, this.y,
+            rnd(0.5,-0.5), rnd(0.6,0),
+            80+Math.random()*40,
+            Math.random()<0.7?'#ffcc55':'#ffffaa',
+            rnd(2,1),
+            {gravity:0.08, drag:0.99}
+          ));
+        }
+      }
+    };
+  }
+
+  function makeTezutsu(x,y){
+    return { x,y, type:'手筒花火', emit(){
+      for(let i=0;i<36;i++){
+        const ang = -Math.PI/2 + rnd(0.16,-0.16);
+        const sp  = 15*(0.7+Math.random()*0.6);
+        particles.push(new Particle(
+          this.x+rnd(5,-5), this.y,
+          Math.cos(ang)*sp, Math.sin(ang)*sp,
+          90+Math.random()*40,
+          Math.random()<0.6?'#ffaa33':(Math.random()<0.5?'#ffee55':'#ffffff'),
+          rnd(3.5,1.8),
+          {gravity:0.1, drag:0.99}
+        ));
+      }
+      for(let i=0;i<8;i++){
+        const side = Math.random()<0.5?-1:1;
+        const ang  = side*(Math.PI/3 + rnd(Math.PI/6,0));
+        const sp   = rnd(8,4);
+        particles.push(new Particle(
+          this.x,this.y,Math.cos(ang)*sp,-Math.abs(Math.sin(ang))*sp*0.5,
+          40,'#ffaa33',1.6,
+          {gravity:0.15, drag:0.97}
+        ));
+      }
+      particles.push(new Particle(
+        this.x,this.y,0,0,4,'#ff4422',5,
+        {gravity:0,drag:1,twinkle:false,shrink:false}
+      ));
+    }};
+  }
+
+  const fireworkTypes = [
+    {name:'線香花火',         create:(x,y)=>makeSparkler(x,y)},
+    {name:'手持ち花火(小)',    create:(x,y)=>makeHandheld(x,y,'small')},
+    {name:'ねずみ花火',        create:(x,y)=>makeRat(x,y)},
+    {name:'手持ち花火(中)',    create:(x,y)=>makeHandheld(x,y,'medium')},
+    {name:'噴出花火(小)',      create:(x,y)=>makeFountain(x,y,'small')},
+    {name:'打ち上げ花火(小)',  create:(x,y)=>makeAerial(x,y,'small')},
+    {name:'手持ち花火(大)',    create:(x,y)=>makeHandheld(x,y,'large')},
+    {name:'噴出花火(大)',      create:(x,y)=>makeFountain(x,y,'large')},
+    {name:'ナイアガラ',        create:(x,y)=>makeNiagara(x,y)},
+    {name:'ナイアガラ',        create:(x,y)=>makeNiagara(x,y)},
+    {name:'打ち上げ花火(大)',  create:(x,y)=>makeAerial(x,y,'large')},
+    {name:'手筒花火',          create:(x,y)=>makeTezutsu(x,y)},
+  ];
+  const pickType = sec => fireworkTypes[Math.max(0, Math.min(11, Math.floor(sec)))];
+
+  // ---- 入力 ----
+  const CLICK_THRESHOLD_MS = 200;
+  function removeNearest(x,y){
+    const MAX_DIST = Math.max(canvas.width, canvas.height) * 0.15;
+    let bestIdx = -1, bestD2 = MAX_DIST*MAX_DIST;
+    for (let i=0; i<emitters.length; i++){
+      const em = emitters[i];
+      const dx = em.x - x, dy = em.y - y;
+      const d2 = dx*dx + dy*dy;
+      if (d2 < bestD2){ bestD2 = d2; bestIdx = i; }
+    }
+    if (bestIdx >= 0){
+      const removed = emitters[bestIdx];
+      emitters.splice(bestIdx, 1);
+      return removed;
+    }
+    return null;
+  }
+
+  let pressing=false, pressStart=0, pressX=0, pressY=0;
+  const getPos = e => {
+    const r = canvas.getBoundingClientRect();
+    const p = e.touches && e.touches[0] ? e.touches[0] : e;
+    return { x: p.clientX - r.left, y: p.clientY - r.top };
+  };
+  const startPress = e => {
+    e.preventDefault();
+    pressing = true;
+    pressStart = performance.now();
+    const p = getPos(e); pressX=p.x; pressY=p.y;
+  };
+  const endPress = e => {
+    if(!pressing) return;
+    e.preventDefault();
+    pressing = false;
+    const dur = performance.now()-pressStart;
+    if (dur < CLICK_THRESHOLD_MS){
+      const removed = removeNearest(pressX, pressY);
+      typeLabel.textContent = removed
+        ? `${removed.type} を削除（残り ${emitters.length} 個）`
+        : `近くに花火がありません`;
+    } else {
+      const sec = dur/1000;
+      const t = pickType(sec);
+      emitters.push(t.create(pressX, pressY));
+      typeLabel.textContent = `${sec.toFixed(2)}秒 → ${t.name} を配置（合計 ${emitters.length} 個）`;
+    }
+    gaugeFill.style.width = '0%';
+  };
+  canvas.addEventListener('mousedown', startPress);
+  canvas.addEventListener('mouseup',   endPress);
+  canvas.addEventListener('mouseleave',e=>{ if(pressing) endPress(e); });
+  canvas.addEventListener('touchstart', startPress, {passive:false});
+  canvas.addEventListener('touchend',   endPress,   {passive:false});
+  canvas.addEventListener('touchcancel',endPress);
+
+  function clearAll(){
+    particles = []; emitters = [];
+    ctx.fillStyle = '#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+  document.getElementById('clearBtn').addEventListener('click', ()=>{
+    clearAll();
+    typeLabel.textContent = '全てクリアしました';
+  });
+
+  // ---- 描画ループ ----
+  function loop(){
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'rgba(0,0,0,0.28)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    for(const em of emitters) em.emit();
+
+    ctx.globalCompositeOperation = 'lighter';
+    for(const p of particles){ p.update(); p.draw(ctx); }
+    ctx.globalCompositeOperation = 'source-over';
+    particles = particles.filter(p => p.life>0 && p.y < canvas.height+30);
+
+    if(pressing){
+      const sec = Math.min(12,(performance.now()-pressStart)/1000);
+      gaugeFill.style.width = (sec/12*100)+'%';
+      if (sec*1000 >= CLICK_THRESHOLD_MS){
+        typeLabel.textContent = `${sec.toFixed(2)}秒 → ${pickType(sec).name}`;
+      } else {
+        typeLabel.textContent = `押し続けて花火を選択中…`;
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+
+  setTimeout(()=>{
+    resize();
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    loop();
+  }, 50);
+})();
+</script>
+</body>
+</html>
