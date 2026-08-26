@@ -360,10 +360,11 @@ button{
   // on top of that, title/game screens each have their own manual tweaks.
   const BASE_SCALE = [0.77, 1.00, 0.81, 0.57];
 
-  // Title screen: leftmost bigger, 2nd-from-left smaller, rightmost bigger.
+  // Title screen: leftmost bigger, 2nd-from-left smaller (but bumped back up
+  // one size per follow-up feedback), rightmost bigger.
   const TITLE_CHAR_SCALE = [
     BASE_SCALE[0]*1.15,
-    BASE_SCALE[1]*0.70,
+    BASE_SCALE[1]*0.70*1.15,
     BASE_SCALE[2],
     BASE_SCALE[3]*1.30
   ];
