@@ -77,16 +77,17 @@ button{
 .titleChar{
   width:24%;height:100%;display:flex;align-items:flex-end;justify-content:center;
 }
-.titleChar .charScale{
+.idleWrap{
+  width:100%;height:100%;display:flex;align-items:flex-end;justify-content:center;
   animation:idle 1.6s ease-in-out infinite;
 }
 .titleChar img{
   max-width:100%;max-height:92%;width:auto;height:auto;object-fit:contain;
   transform-origin:50% 100%;
 }
-.titleChar:nth-child(2) .charScale{animation-delay:-.35s}
-.titleChar:nth-child(3) .charScale{animation-delay:-.7s}
-.titleChar:nth-child(4) .charScale{animation-delay:-1.05s}
+.titleChar:nth-child(2) .idleWrap{animation-delay:-.35s}
+.titleChar:nth-child(3) .idleWrap{animation-delay:-.7s}
+.titleChar:nth-child(4) .idleWrap{animation-delay:-1.05s}
 @keyframes idle{
   0%,100%{transform:translateY(0) rotate(-1deg)}
   25%{transform:translateY(-5px) rotate(1.5deg)}
@@ -139,7 +140,7 @@ button{
   box-shadow:0 8px 20px rgba(16,45,112,.09);
 }
 .charSlot{
-  position:absolute;bottom:18%;width:25%;height:66%;
+  position:absolute;bottom:18%;width:25%;height:52%;
   display:flex;align-items:flex-end;justify-content:center;
   will-change:transform;
 }
@@ -354,9 +355,26 @@ button{
   // their poses have very different arm/leg spread, so the raw images have
   // different width:height ratios. Since they're all fit into an equally
   // sized box by width, a "wide" pose (arms out) ends up rendered much
-  // shorter than a "narrow" pose (arms at the side). These factors correct
-  // each character back to roughly the same on-screen height.
-  const CHAR_SCALE = [1.00, 1.29, 1.05, 0.74];
+  // taller-relative or shorter-relative than a "narrow" pose. These base
+  // factors scale every character down to match the naturally smallest one;
+  // on top of that, title/game screens each have their own manual tweaks.
+  const BASE_SCALE = [0.77, 1.00, 0.81, 0.57];
+
+  // Title screen: leftmost bigger, 2nd-from-left smaller, rightmost bigger.
+  const TITLE_CHAR_SCALE = [
+    BASE_SCALE[0]*1.15,
+    BASE_SCALE[1]*0.70,
+    BASE_SCALE[2],
+    BASE_SCALE[3]*1.30
+  ];
+
+  // In-game: both edge characters (slot0, slot3) bigger.
+  const GAME_CHAR_SCALE = [
+    BASE_SCALE[0]*1.15,
+    BASE_SCALE[1],
+    BASE_SCALE[2],
+    BASE_SCALE[3]*1.15
+  ];
 
   function makeImg(src, scale=1) {
     const wrap = document.createElement("div");
@@ -374,7 +392,10 @@ button{
     SPRITES.forEach((src,i) => {
       const box = document.createElement("div");
       box.className = "titleChar";
-      box.appendChild(makeImg(src, CHAR_SCALE[i]));
+      const idleWrap = document.createElement("div");
+      idleWrap.className = "idleWrap";
+      idleWrap.appendChild(makeImg(src, TITLE_CHAR_SCALE[i]));
+      box.appendChild(idleWrap);
       titleChars.appendChild(box);
     });
   }
@@ -409,32 +430,43 @@ button{
   function soundJump(){ tone(230,.12,"triangle",.045,130); }
   function soundTap(){ tone(720,.055,"square",.035,-160); }
   function soundGreat(){
-    tone(590,.08,"sine",.045,80);
-    setTimeout(()=>tone(740,.11,"sine",.04,40),55);
+    tone(587,.09,"sine",.05,50);
+    setTimeout(()=>tone(740,.13,"sine",.048,50),70);
   }
   function soundGood(){
-    tone(520,.09,"triangle",.042,50);
+    tone(494,.09,"triangle",.046,30);
+    setTimeout(()=>tone(587,.12,"triangle",.044,30),75);
   }
   function soundNice(){
-    tone(430,.10,"triangle",.04,20);
+    tone(440,.10,"triangle",.042,-10);
+    setTimeout(()=>tone(392,.14,"triangle",.04,-10),85);
   }
   function soundPerfect(){
     tone(523,.12,"sine",.05,80);
     setTimeout(()=>tone(659,.13,"sine",.05,90),55);
     setTimeout(()=>tone(784,.20,"sine",.055,100),105);
   }
-  function soundMiss(){ tone(260,.16,"sawtooth",.035,-130); }
+  function soundMiss(){
+    tone(260,.10,"sawtooth",.04,-60);
+    setTimeout(()=>tone(180,.18,"sawtooth",.04,-40),70);
+  }
 
   function soundRankTop(){
-    tone(523,.11,"sine",.05,60);
-    setTimeout(()=>tone(659,.11,"sine",.05,60),90);
-    setTimeout(()=>tone(784,.11,"sine",.05,60),180);
-    setTimeout(()=>tone(1047,.28,"sine",.06,80),270);
+    const notes=[523,659,784,1047];
+    notes.forEach((f,i)=>setTimeout(()=>tone(f,.16,"sine",.05,50),i*90));
+    setTimeout(()=>{
+      tone(784,.45,"sine",.05,0);
+      tone(1047,.45,"sine",.045,0);
+      tone(1319,.45,"sine",.04,0);
+    },380);
   }
   function soundRankGreat(){
     tone(523,.10,"sine",.045,40);
     setTimeout(()=>tone(659,.10,"sine",.045,40),85);
-    setTimeout(()=>tone(880,.20,"sine",.05,60),170);
+    setTimeout(()=>{
+      tone(784,.24,"sine",.05,50);
+      tone(988,.24,"sine",.04,50);
+    },170);
   }
   function soundRankNice(){
     tone(494,.10,"triangle",.04,30);
@@ -501,7 +533,7 @@ button{
       const slot = document.createElement("div");
       slot.className = "charSlot slot"+i;
       slot.dataset.id = i;
-      slot.appendChild(makeImg(src, CHAR_SCALE[i]));
+      slot.appendChild(makeImg(src, GAME_CHAR_SCALE[i]));
       stage.appendChild(slot);
     });
   }
@@ -510,7 +542,7 @@ button{
     const p = (now - j.start) / j.duration;
     if (p <= 0) return 0;
     if (p >= 1) return 0;
-    return Math.sin(Math.PI * p) * j.height * stage.clientHeight * .55;
+    return Math.sin(Math.PI * p) * j.height * stage.clientHeight * .34;
   }
 
   function updateFrame(now) {
