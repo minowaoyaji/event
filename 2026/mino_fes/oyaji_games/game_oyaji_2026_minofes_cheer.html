@@ -66,7 +66,10 @@ button{
 }
 .catch{
   margin-top:clamp(5px,1.2vh,12px);
-  color:#3e4d76;font-weight:900;font-size:clamp(13px,2.2vh,18px);
+  color:#3e4d76;font-weight:900;font-size:clamp(11px,2vh,15px);
+  line-height:1.5;
+  text-align:center;
+  max-width:min(330px,88vw);
 }
 .titleChars{
   width:min(760px,100%);height:clamp(150px,29vh,250px);
@@ -159,7 +162,7 @@ button{
   transform-origin:50% 100%;user-select:none;pointer-events:none;
   filter:drop-shadow(0 5px 2px rgba(16,45,112,.07));
 }
-.slot0{left:0}.slot1{left:25%}.slot2{left:50%}.slot3{left:75%}
+.slot0{left:2.04%}.slot1{left:28.58%}.slot2{left:54.22%}.slot3{left:75.72%}
 
 .tapPulse{
   position:absolute;left:50%;top:55%;transform:translate(-50%,-50%) scale(.6);
@@ -239,7 +242,7 @@ button{
 
 @media (max-height:650px){
   .logo .small{font-size:13px}.logo .main{font-size:34px}.logo .sub{font-size:27px}
-  #titleScreen .titleChars{height:175px}.catch{font-size:12px}
+  #titleScreen .titleChars{height:175px}.catch{font-size:10px}
   .diff{min-height:43px}.menu{gap:6px}
   .resultChars{height:120px}
   .resultTitle{font-size:20px}
@@ -253,7 +256,7 @@ button{
   .logo .small{font-size:14px}
   .logo .main{font-size:clamp(30px,7.8vw,48px)}
   .logo .sub{font-size:clamp(22px,5.8vw,38px)}
-  .catch{font-size:12px;margin-top:2px}
+  .catch{font-size:10px;margin-top:2px}
   #titleScreen .titleChars{height:24vh;min-height:125px;max-height:185px}
   .diff{min-height:40px}
   .diff span{font-size:.55em}
@@ -261,12 +264,14 @@ button{
   .resultChars{height:clamp(110px,22vh,180px)}
 }
 @media (max-height:600px){
-  .logo .small{font-size:12px}
-  .logo .main{font-size:30px}
-  .logo .sub{font-size:22px}
-  #titleScreen .titleChars{height:22vh;min-height:105px;max-height:145px}
-  .catch{display:none}
-  .diff{min-height:36px;font-size:17px}
+  .logo .small{font-size:11px}
+  .logo .main{font-size:26px}
+  .logo .sub{font-size:18px}
+  #titleScreen .titleChars{height:18vh;min-height:85px;max-height:120px}
+  .catch{font-size:9px;margin-top:2px;line-height:1.3}
+  .diff{min-height:32px;font-size:15px}
+  .diff span{font-size:.5em}
+  .menu{gap:4px}
   .resultChars{height:100px}
   .resultTitle{font-size:18px}
   .totalLabel{font-size:12px}
@@ -276,6 +281,15 @@ button{
   .stat{font-size:11.5px;padding:1px 2px}
   .resultButtons{gap:5px;margin-top:6px}
   .resultBtn{min-height:38px;font-size:14px}
+}
+@media (max-height:480px){
+  .logo .small{font-size:10px}
+  .logo .main{font-size:22px}
+  .logo .sub{font-size:15px}
+  #titleScreen .titleChars{height:15vh;min-height:65px;max-height:95px}
+  .catch{font-size:8px;margin-top:1px;line-height:1.25}
+  .diff{min-height:28px;font-size:13px}
+  .menu{gap:3px}
 }
 @media (max-width:380px){
   .titleChar img{max-width:92%}
@@ -295,9 +309,12 @@ button{
     <div class="logo">
       <span class="small">オールみのわフェスタ</span>
       <span class="main">チアゲーム</span>
-      <span class="sub">★ タップで最高点！ ★</span>
+      <span class="sub">★ ジャンプのいちばん高いところでタップ！ ★</span>
     </div>
-    <div class="catch">ジャンプのいちばん高いところをねらおう！</div>
+    <div class="catch">
+      オールみのわフェスタをもっと楽しもう！<br>
+      箕輪町を代表するダンスチーム「日大チア部」がゲームになったよ！
+    </div>
     <div id="titleChars" class="titleChars"></div>
     <div class="menu">
       <button class="diff easy" data-diff="easy">かんたん<span>まずはここから！</span></button>
