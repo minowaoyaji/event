@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Be ACTO 日吉｜オールみのわフェスタ</title>
+<style>
+/* オールみのわフェスタ Webパンフレット — shared styles */
+
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
+:root{
+  --cream:      #fdf1dd;
+  --cream-soft: #fff8ec;
+  --orange:     #f6a94a;
+  --orange-deep:#ee8c31;
+  --teal:       #22bfb6;
+  --pink:       #ef5079;
+  --pink-deep:  #e13763;
+  --brown:      #8a6b4d;
+  --charcoal:   #3c3733;
+  --green:      #4f9a63;
+  --maple:      #c94a34;
+  --paper:      #fffdf8;
+  --shadow: 0 10px 30px rgba(60, 40, 20, 0.12);
+  --radius: 22px;
+}
+
+*{ box-sizing:border-box; }
+
+html{ scroll-behavior:smooth; }
+
+body{
+  margin:0;
+  font-family:"Noto Sans JP", sans-serif;
+  color:var(--charcoal);
+  background-color:var(--cream-soft);
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--cream) 0px, var(--cream) 64px,
+    var(--cream-soft) 64px, var(--cream-soft) 128px
+  );
+  line-height:1.8;
+}
+
+h1,h2,h3,.display{
+  font-family:"M PLUS Rounded 1c", "Noto Sans JP", sans-serif;
+  margin:0;
+}
+
+a{ color:inherit; }
+
+img{ max-width:100%; display:block; }
+
+.wrap{
+  max-width:960px;
+  margin:0 auto;
+  padding:0 24px;
+}
+
+/* ---------- stripes background ---------- */
+.stripes{
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--cream) 0px, var(--cream) 64px,
+    var(--cream-soft) 64px, var(--cream-soft) 128px
+  );
+}
+
+/* ---------- bunting flags ---------- */
+.bunting{
+  display:flex;
+  justify-content:center;
+  gap:4px;
+  padding:10px 0;
+  overflow:hidden;
+}
+.bunting span{
+  width:0; height:0;
+  border-left:19px solid transparent;
+  border-right:19px solid transparent;
+  border-top:26px solid var(--c, var(--teal));
+  border-radius:0 0 3px 3px;
+  flex:0 0 auto;
+}
+.bunting.rainbow span:nth-child(6n+1){ --c:#4fb0e0; }
+.bunting.rainbow span:nth-child(6n+2){ --c:#f2c94c; }
+.bunting.rainbow span:nth-child(6n+3){ --c:#ef5079; }
+.bunting.rainbow span:nth-child(6n+4){ --c:#5fb87a; }
+.bunting.rainbow span:nth-child(6n+5){ --c:#9b6fd6; }
+.bunting.rainbow span:nth-child(6n+6){ --c:#4fd6c9; }
+.bunting.pastel span:nth-child(3n+1){ --c:#bfe6e2; }
+.bunting.pastel span:nth-child(3n+2){ --c:#ffe08a; }
+.bunting.pastel span:nth-child(3n+3){ --c:#a9d4f5; }
+
+/* ---------- site header (used on inner pages) ---------- */
+.site-header{
+  position:sticky; top:0; z-index:40;
+  background:rgba(255,253,248,0.92);
+  backdrop-filter: blur(6px);
+  border-bottom:1px solid rgba(140,110,70,0.15);
+}
+.site-header .bar{
+  max-width:960px; margin:0 auto; padding:14px 24px;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:16px;
+}
+.site-header .logo{
+  font-weight:800; font-size:1.05rem; color:var(--pink-deep);
+  text-decoration:none; letter-spacing:.02em;
+}
+.site-header .back{
+  font-size:.9rem; color:var(--charcoal); text-decoration:none;
+  border:1.5px solid var(--charcoal); border-radius:100px;
+  padding:6px 16px; white-space:nowrap;
+}
+.site-header .back:hover{ background:var(--charcoal); color:#fff; }
+
+/* ---------- hero (index) ---------- */
+.hero-image{
+  background:var(--cream);
+  line-height:0;
+}
+.hero-image img{
+  width:100%;
+  max-width:900px;
+  margin:0 auto;
+}
+
+/* ---------- table of contents ---------- */
+.toc{
+  padding:20px 0 28px;
+}
+.toc h2{
+  text-align:center;
+  font-size:1.25rem;
+  margin-bottom:2px;
+  color:var(--charcoal);
+}
+.toc .lead{
+  text-align:center; color:var(--brown); margin-bottom:14px; font-size:.76rem;
+}
+.toc-grid{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:8px;
+}
+.toc-card{
+  position:relative;
+  background:var(--paper);
+  border-radius:14px;
+  padding:8px 10px;
+  box-shadow:0 3px 10px rgba(60,40,20,.08);
+  text-decoration:none;
+  color:var(--charcoal);
+  display:flex; flex-direction:row; align-items:center; gap:8px;
+  border:1px solid rgba(140,110,70,.08);
+  transition:transform .15s ease, box-shadow .15s ease;
+  min-height:44px;
+}
+.toc-card:hover{ transform:translateY(-2px); box-shadow:0 8px 16px rgba(60,40,20,.14); }
+.toc-card .icon{
+  width:26px; height:26px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.78rem; color:#fff;
+  background:var(--tint, var(--teal));
+  flex:0 0 auto;
+}
+.toc-card .name{ font-weight:700; font-size:.72rem; line-height:1.3; word-break:keep-all; overflow-wrap:break-word; }
+.toc-card .desc{ display:none; }
+.toc-card .arrow{ display:none; }
+.toc-card.disabled{
+  opacity:.5; cursor:default; pointer-events:none;
+  border-style:dashed;
+}
+.toc-section-label{
+  font-size:.66rem; letter-spacing:.08em; color:var(--brown);
+  margin:14px 0 6px; font-weight:700;
+}
+.toc-section-label:first-of-type{ margin-top:0; }
+
+/* ---------- footer ---------- */
+.site-footer{
+  background:var(--charcoal);
+  color:#f4ece0;
+  padding:30px 0;
+  text-align:center;
+  font-size:.82rem;
+}
+.site-footer a{ color:#ffd9a0; text-decoration:none; }
+
+/* ---------- generic inner-page hero ---------- */
+.page-hero{
+  padding:48px 0 40px;
+  text-align:center;
+  color:#fff;
+  position:relative;
+}
+.page-hero h1{
+  font-size:clamp(1.8rem,6vw,2.6rem);
+  font-weight:800;
+}
+.page-hero p{ margin-top:10px; opacity:.92; max-width:520px; margin-left:auto; margin-right:auto; }
+
+/* ---------- content sections ---------- */
+.section{ padding:46px 0; }
+.section h2{
+  font-size:1.5rem;
+  margin-bottom:16px;
+  display:flex; align-items:center; gap:10px;
+}
+.section h2::before{
+  content:"";
+  width:10px; height:10px; border-radius:50%;
+  background:var(--tint, var(--pink));
+  flex:0 0 auto;
+}
+.card{
+  background:var(--paper);
+  border-radius:var(--radius);
+  padding:26px;
+  box-shadow:var(--shadow);
+}
+.two-col{
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:28px;
+  align-items:center;
+}
+@media (max-width:720px){
+  .two-col{ grid-template-columns:1fr; }
+}
+
+.qr-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:16px;
+  margin-top:18px;
+  text-align:center;
+}
+.qr-grid figure{ margin:0; }
+.qr-grid img{
+  border:2px solid var(--green);
+  border-radius:12px;
+  padding:6px;
+  background:#fff;
+}
+.qr-grid figcaption{
+  margin-top:8px; font-size:.82rem; font-weight:700;
+  background:var(--green); color:#fff; border-radius:100px; padding:4px 10px;
+  display:inline-block;
+}
+
+.speech{
+  background:#fff6e2; border-radius:18px; padding:18px 20px;
+  font-size:.88rem; color:var(--brown); position:relative;
+}
+
+.info-table{
+  width:100%; border-collapse:collapse; font-size:.92rem;
+}
+.info-table th{
+  background:var(--maple); color:#fff; text-align:left;
+  padding:12px 14px; width:110px; border-radius:10px 0 0 10px;
+  vertical-align:top; font-weight:700;
+}
+.info-table td{
+  background:#fff8f2; padding:12px 14px; vertical-align:top;
+  border-radius:0 10px 10px 0;
+}
+.info-table tr{ display:flex; margin-bottom:8px; }
+.info-table th, .info-table td{ flex:none; }
+.info-table th{ flex:0 0 110px; }
+.info-table td{ flex:1; }
+
+.badge-note{
+  display:inline-block; background:var(--pink); color:#fff;
+  font-weight:700; font-size:.8rem; padding:5px 14px; border-radius:100px;
+  margin-bottom:10px;
+}
+
+.placeholder-wrap{
+  min-height:50vh;
+  display:flex; align-items:center; justify-content:center;
+  text-align:center; padding:60px 24px;
+}
+.placeholder-box{
+  background:var(--paper); border-radius:var(--radius);
+  padding:48px 36px; box-shadow:var(--shadow);
+  max-width:420px;
+}
+.placeholder-box .icon{
+  font-size:2.6rem; margin-bottom:14px;
+}
+.placeholder-box h1{ font-size:1.4rem; margin-bottom:10px; }
+.placeholder-box p{ color:var(--brown); font-size:.92rem; }
+.placeholder-box .back-link{
+  display:inline-block; margin-top:20px;
+  background:var(--charcoal); color:#fff; text-decoration:none;
+  padding:10px 22px; border-radius:100px; font-weight:700; font-size:.88rem;
+}
+
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="bar">
+    <a class="logo" href="index.html">オールみのわフェスタ</a>
+    <a class="back" href="index.html">← 目次にもどる</a>
+  </div>
+</header>
+
+<main class="placeholder-wrap stripes" style="min-height:70vh;">
+  <div class="placeholder-box">
+    <div class="icon">🏢</div>
+    <h1>Be ACTO 日吉</h1>
+    <p>Be ACTO日吉の紹介ページを準備中です。</p>
+    <a class="back-link" href="index.html" style="background:#22bfb6;">目次にもどる</a>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p><a href="index.html">← オールみのわフェスタ 目次にもどる</a></p>
+</footer>
+
+</body>
+</html>
