@@ -101,18 +101,18 @@ img{ max-width:100%; display:block; }
   border-bottom:1px solid rgba(140,110,70,0.15);
 }
 .site-header .bar{
-  max-width:960px; margin:0 auto; padding:14px 24px;
+  max-width:960px; margin:0 auto; padding:8px 20px;
   display:flex; align-items:center; justify-content:space-between;
   gap:16px;
 }
 .site-header .logo{
-  font-weight:800; font-size:1.05rem; color:var(--pink-deep);
+  font-weight:800; font-size:.95rem; color:var(--pink-deep);
   text-decoration:none; letter-spacing:.02em;
 }
 .site-header .back{
-  font-size:.9rem; color:var(--charcoal); text-decoration:none;
+  font-size:.8rem; color:var(--charcoal); text-decoration:none;
   border:1.5px solid var(--charcoal); border-radius:100px;
-  padding:6px 16px; white-space:nowrap;
+  padding:4px 12px; white-space:nowrap;
 }
 .site-header .back:hover{ background:var(--charcoal); color:#fff; }
 
@@ -183,27 +183,27 @@ img{ max-width:100%; display:block; }
 .site-footer{
   background:var(--charcoal);
   color:#f4ece0;
-  padding:30px 0;
+  padding:16px 0;
   text-align:center;
-  font-size:.82rem;
+  font-size:.78rem;
 }
 .site-footer a{ color:#ffd9a0; text-decoration:none; }
 
 /* ---------- generic inner-page hero ---------- */
 .page-hero{
-  padding:48px 0 40px;
+  padding:16px 0 14px;
   text-align:center;
   color:#fff;
   position:relative;
 }
 .page-hero h1{
-  font-size:clamp(1.8rem,6vw,2.6rem);
+  font-size:clamp(1.25rem,4.5vw,1.6rem);
   font-weight:800;
 }
-.page-hero p{ margin-top:10px; opacity:.92; max-width:520px; margin-left:auto; margin-right:auto; }
+.page-hero p{ margin-top:4px; opacity:.92; max-width:520px; margin-left:auto; margin-right:auto; font-size:.82rem; }
 
 /* ---------- content sections ---------- */
-.section{ padding:46px 0; }
+.section{ padding:14px 0; }
 .section h2{
   font-size:1.5rem;
   margin-bottom:16px;
@@ -275,8 +275,8 @@ img{ max-width:100%; display:block; }
 
 .badge-note{
   display:inline-block; background:var(--pink); color:#fff;
-  font-weight:700; font-size:.8rem; padding:5px 14px; border-radius:100px;
-  margin-bottom:10px;
+  font-weight:700; font-size:.72rem; padding:3px 12px; border-radius:100px;
+  margin-bottom:6px;
 }
 
 .placeholder-wrap{
@@ -301,6 +301,38 @@ img{ max-width:100%; display:block; }
 }
 
 </style>
+
+<style>
+.warn-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.warn-card{
+  background:var(--paper);
+  border-radius:14px;
+  padding:11px 13px;
+  box-shadow:0 2px 8px rgba(60,40,20,.07);
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+}
+.warn-card .icon{
+  width:28px; height:28px; border-radius:50%;
+  background:var(--pink-deep);
+  color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.85rem;
+  flex:0 0 auto;
+}
+.warn-card .body{ flex:1; }
+.warn-card .body p{ margin:0; font-size:.86rem; line-height:1.5; }
+.warn-card .body ul{ margin:4px 0 0; padding-left:1.1em; font-size:.8rem; line-height:1.5; color:var(--charcoal); }
+.warn-card .body ul li strong{ color:var(--pink-deep); }
+.warn-card.rain .icon{ background:#5f7096; }
+.warn-card.rain .body ul li:first-child strong{ color:#5f7096; }
+</style>
+
 </head>
 <body>
 
@@ -311,13 +343,65 @@ img{ max-width:100%; display:block; }
   </div>
 </header>
 
-<main class="placeholder-wrap stripes" style="min-height:70vh;">
-  <div class="placeholder-box">
-    <div class="icon">⚠️</div>
+<section class="page-hero" style="background:linear-gradient(160deg, #f0698c, var(--pink-deep) 60%, #b8264c);">
+  <div class="wrap">
+    <p class="badge-note" style="background:#fff; color:var(--pink-deep);">⚠️ 必ずご確認ください</p>
     <h1>注意点</h1>
-    <p>ご来場にあたっての注意事項ページを準備中です。会場ルールや持ち物、天候による変更点などをまとめる予定です。</p>
-    <a class="back-link" href="index.html" style="background:#e13763;">目次にもどる</a>
+    <p>当日気持ちよく過ごしていただくためのお願いです。<br>ご来場前にご一読ください。</p>
   </div>
+</section>
+
+<main class="wrap">
+  <section class="section">
+    <div class="warn-list">
+
+      <div class="warn-card">
+        <div class="icon">👟</div>
+        <div class="body">
+          <p>箕輪小学校校舎内は<strong>土足NG</strong>です。<br>上履きやスリッパをご持参ください。</p>
+        </div>
+      </div>
+
+      <div class="warn-card rain">
+        <div class="icon">☂️</div>
+        <div class="body">
+          <p><strong>雨天時</strong></p>
+          <ul>
+            <li>開会式は<strong>アリーナ</strong>に変更になります。</li>
+            <li>野外ステージは開会式以外<strong>中止</strong></li>
+            <li>フリマは<strong>中止</strong>になります。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="warn-card">
+        <div class="icon">🚫</div>
+        <div class="body">
+          <p>まちのリビングは、<strong>スタッフ以外立ち入り禁止</strong>となります。</p>
+        </div>
+      </div>
+
+      <div class="warn-card">
+        <div class="icon">🚲</div>
+        <div class="body">
+          <p>自転車やキックボードなどは、<strong>イベントエリア外</strong>に駐輪ください。</p>
+        </div>
+      </div>
+
+      <div class="warn-card">
+        <div class="icon">🏞️</div>
+        <div class="body">
+          <p>プラウドシティ公開空地は、以下の行為は禁止されています。<br>イベント中に限らずご遠慮ください。</p>
+          <ul>
+            <li>自転車走行(ウェルネスプラザのみ保護者同伴でのこどもの練習可)</li>
+            <li>スケボー、キックボード、ローラースケート等での走行</li>
+            <li>ボール遊び</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
 </main>
 
 <footer class="site-footer">
