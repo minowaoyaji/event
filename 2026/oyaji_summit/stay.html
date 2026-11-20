@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#065f86">
+<title>田無周辺の宿泊エリア情報｜全国おやじサミットin西東京</title>
+<style>
+:root{--c1:#0a9bd8;--c1d:#065f86;--c2:#00aeef;--ink:#1b2a33;--muted:#5b6b75;--bg:#edf4f7;--card:#fff;--line:#d5e2e8;
+--warn:#fff4d6;--warnb:#f0a500;--danger:#fde8e6;--dangerb:#d93025;--ok:#e6f5ea;--okb:#2e9d57;--p1:#ee7d2d;--p2:#2e9d57}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Meiryo UI","Hiragino Sans","Yu Gothic UI","Noto Sans JP",system-ui,sans-serif;line-height:1.75;font-size:16px;
+padding-bottom:env(safe-area-inset-bottom)}
+a{color:var(--c1d)}
+.topbar{position:sticky;top:0;z-index:50;background:var(--c1d);color:#fff;display:flex;align-items:center;gap:6px;padding:0 6px;padding-top:env(safe-area-inset-top);box-shadow:0 2px 8px #0003}
+.topbar a{color:#fff;text-decoration:none;font-weight:700;min-height:48px;display:flex;align-items:center;padding:0 10px;white-space:nowrap}
+.topbar .ttl{flex:1;font-size:.88rem;opacity:.95;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.band{background:linear-gradient(135deg,var(--c1),var(--c2));color:#fff;padding:18px 16px 20px}
+.band .no{display:inline-block;background:#fff;color:var(--c1d);font-weight:800;border-radius:999px;padding:1px 12px;font-size:.9rem;margin-bottom:6px}
+.band h1{margin:0;font-size:1.45rem;line-height:1.4}
+.band p{margin:6px 0 0;font-size:.92rem;opacity:.95}
+.wrap{max-width:720px;margin:0 auto;padding:14px 13px 40px}
+h2{font-size:1.15rem;margin:26px 0 10px;padding-left:10px;border-left:6px solid var(--c2);line-height:1.4}
+h3{font-size:1.02rem;margin:0 0 6px;line-height:1.5}
+.card{background:var(--card);border-radius:14px;padding:14px 15px;margin:12px 0;box-shadow:0 1px 6px #0e2a3a1a}
+.card>:first-child{margin-top:0}.card>:last-child{margin-bottom:0}
+.note,.alert,.good{border-left:5px solid var(--warnb);background:var(--warn);border-radius:8px;padding:11px 13px;margin:12px 0;font-size:.95rem}
+.alert{border-color:var(--dangerb);background:var(--danger)}
+.good{border-color:var(--okb);background:var(--ok)}
+.muted{color:var(--muted);font-size:.9rem}
+ul,ol{padding-left:1.3em;margin:.4em 0}
+li{margin:.25em 0}
+figure{margin:12px 0;padding:0}
+figure.zf{position:relative}
+figure.zf:after{content:"タップで拡大";position:absolute;right:8px;top:8px;background:#000b;color:#fff;border-radius:999px;padding:2px 10px;font-size:.76rem;pointer-events:none}
+figure img,.zoomable{width:100%;height:auto;display:block;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:zoom-in}
+figcaption{font-size:.85rem;color:var(--muted);text-align:center;margin-top:6px}
+.zh{display:inline-block;background:#0007;color:#fff;border-radius:999px;font-size:.78rem;padding:1px 10px;margin-left:6px}
+.steps{list-style:none;counter-reset:s;padding:0;margin:10px 0}
+.steps li{counter-increment:s;position:relative;background:#fff;border-radius:12px;padding:11px 12px 11px 54px;margin:0 0 9px;box-shadow:0 1px 5px #0e2a3a14}
+.steps li:before{content:counter(s);position:absolute;left:12px;top:10px;width:30px;height:30px;border-radius:50%;background:var(--c1);color:#fff;font-weight:800;display:grid;place-items:center}
+.steps li.goal:before{background:var(--okb)}
+.steps b.warn{color:var(--dangerb)}
+.tag{display:inline-block;border-radius:7px;padding:1px 8px;font-size:.78rem;font-weight:800;margin:0 4px 2px 0;background:#e1f3fb;color:var(--c1d)}
+.tag.p1{background:#fde9d9;color:#a5480b}.tag.p2{background:#def2e4;color:#1d6c3a}.tag.rm{background:#eceff1;color:#37474f}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 1px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;border:1px solid #a9c3cf;background:#fff;color:var(--ink);border-radius:999px;padding:8px 14px;font:inherit;font-size:.9rem;min-height:40px}
+.chips button.on{background:var(--c1d);border-color:var(--c1d);color:#fff;font-weight:700}
+.tl{position:relative;margin:8px 0 0;padding:0;list-style:none}
+.tl li{display:grid;grid-template-columns:78px 1fr;gap:6px;margin:0;padding:9px 0;border-bottom:1px dashed var(--line)}
+.tl li:last-child{border:0}
+.tl .t{font-weight:800;color:var(--c1d);font-size:.98rem;line-height:1.4}
+.tl .t small{display:block;color:var(--muted);font-weight:400;font-size:.78rem}
+.tl .b b{display:block;line-height:1.5}
+.tl li.now{background:#fff7d1;margin:0 -8px;padding:9px 8px;border-radius:10px;outline:2px solid var(--warnb)}
+.tl li.past{opacity:.5}
+.tl li.hl{background:#eaf7fd;margin:0 -8px;padding:9px 8px;border-radius:10px}
+.tabs{position:sticky;top:48px;z-index:40;display:flex;background:var(--bg);padding:8px 0;gap:8px}
+.tabs button{flex:1;border:2px solid var(--c1d);background:#fff;color:var(--c1d);border-radius:12px;font:inherit;font-weight:800;padding:10px 4px;min-height:46px}
+.tabs button.on{background:var(--c1d);color:#fff}
+table.tb{width:100%;border-collapse:collapse;font-size:.92rem}
+table.tb td.nw{white-space:nowrap}
+table.tb th,table.tb td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+table.tb th{background:#eaf5fa;font-size:.82rem}
+details{background:#fff;border-radius:12px;margin:9px 0;box-shadow:0 1px 5px #0e2a3a14}
+summary{font-weight:800;padding:13px 14px;cursor:pointer;list-style:none;min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+summary::-webkit-details-marker{display:none}
+summary:after{content:"＋";color:var(--c1d);font-size:1.2rem}
+details[open] summary:after{content:"－"}
+details .in{padding:0 14px 14px}
+.pager{display:flex;gap:10px;margin:28px 0 8px}
+.pager a{flex:1;display:block;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;text-decoration:none;color:var(--ink);font-size:.86rem;min-height:56px}
+.pager a b{display:block;color:var(--c1d);font-size:.95rem}
+.pager a.next{text-align:right}
+.pager a.idx{flex:0 0 76px;text-align:center;display:grid;place-items:center;background:var(--c1d);color:#fff;font-weight:800}
+footer{text-align:center;color:var(--muted);font-size:.78rem;padding:6px 10px 28px}
+#lb{position:fixed;inset:0;z-index:999;background:#000e;display:none;flex-direction:column}
+#lb.on{display:flex}
+#lb .bar{display:flex;gap:8px;align-items:center;padding:8px;padding-top:max(8px,env(safe-area-inset-top));background:#111}
+#lb .bar button{background:#fff;border:0;border-radius:10px;font:inherit;font-weight:800;min-width:48px;min-height:44px;padding:0 12px}
+#lb .bar .sp{flex:1}#lb .bar span{color:#fff;font-size:.85rem}
+#lb .body{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y pinch-zoom}
+#lb img{display:block;max-width:none;background:#fff}
+@media(min-width:700px){.band h1{font-size:1.8rem}.wrap{padding-top:20px}}
+@media print{.topbar,.pager,#lb,.tabs{display:none!important}body{background:#fff}.card{box-shadow:none;border:1px solid #ccc}}
+</style></head>
+<body id="top">
+<div class="topbar"><a href="index.html" aria-label="目次へ">☰ 目次</a><div class="ttl">田無周辺の宿泊エリア情報</div></div>
+<header class="band"><span class="no">3</span><br><h1>田無周辺の宿泊エリア情報</h1><p>遠方から参加する方への宿泊情報</p></header>
+<main class="wrap">
+<div class="note">遠方から参加する方向けの宿泊エリア情報です。エリア名をタップすると開きます。</div><details open><summary>新宿</summary><div class="in"><h3>田無までのアクセス</h3><p style="margin:0">西武新宿駅 →【西武新宿線 急行利用で約20分】→ 田無駅</p><p class="muted" style="margin:.2em 0 0">急行は約10分毎</p><h3 style="margin-top:12px">エリアのポイント</h3><p style="margin:0">日本随一の繁華街。東京観光にも、移動の拠点としても最適。東京来訪の記念に都庁の無料展望室はいかがでしょうか。ちなみに、前夜祭の会場は新宿歌舞伎町。</p></div></details><details><summary>吉祥寺</summary><div class="in"><h3>田無までのアクセス</h3><p style="margin:0">吉祥寺駅北口8番乗り場 →【西武バス 吉64経由 約30分】→ 田無警察署前</p><p class="muted" style="margin:.2em 0 0">バスは20〜30分毎。JR中央線で武蔵境へ経由するアクセスもおすすめ。</p><h3 style="margin-top:12px">エリアのポイント</h3><p style="margin:0">日本で一番住みたいまちランキング1位。近くには井の頭公園、駅前の商店街は魅力的。さとうのメンチカツは必食。</p></div></details><details><summary>武蔵境</summary><div class="in"><h3>田無までのアクセス</h3><p style="margin:0">武蔵境駅北口1番乗り場 →【西武バス 境03・04 約15分】→ 田無駅</p><p class="muted" style="margin:.2em 0 0">バスは約7〜10分毎</p><h3 style="margin-top:12px">エリアのポイント</h3><p style="margin:0">田無へ最もアクセスの良い場所。但し、特に何もない。</p></div></details><details><summary>立川</summary><div class="in"><h3>田無までのアクセス</h3><p style="margin:0">立川北駅 →【多摩モノレール 約8分】→ 玉川上水駅 →【西武拝島線 約17分】→ 田無駅<br>立川駅 →【JR中央線 約18分】→ 武蔵境駅 →【西武バス 約15分】→ 田無駅</p><p class="muted" style="margin:.2em 0 0">他のルートもありますが、乗り換えが一番少ないのが上記の2ルート</p><h3 style="margin-top:12px">エリアのポイント</h3><p style="margin:0">東京の副都心。昭和記念公園、ららぽーと、IKEAなどなどが集結。駅前のグルメも充実。</p></div></details><details><summary>所沢</summary><div class="in"><h3>田無までのアクセス</h3><p style="margin:0">所沢駅 →【西武新宿線 約16分】→ 田無駅</p><p class="muted" style="margin:.2em 0 0">電車は約10分毎</p><h3 style="margin-top:12px">エリアのポイント</h3><p style="margin:0">埼玉県にはなりますが、西武鉄道沿線。飛行機好きには所沢航空記念公園、マンガ好きにはKADOKAWA桜タウン、野球好きには西武ドームと盛りだくさん。</p></div></details><details><summary>川越</summary><div class="in"><h3>田無までのアクセス</h3><p style="margin:0">本川越駅 →【西武新宿線 約40分】→ 田無駅</p><p class="muted" style="margin:.2em 0 0">電車は約10分毎</p><h3 style="margin-top:12px">エリアのポイント</h3><p style="margin:0">こちらも埼玉県です。日帰り旅行先として西武鉄道が推す時の鐘・蔵の街。童心に帰って菓子屋横丁で駄菓子を大人買い！？お帰りには是非レッドアローを。</p></div></details><details><summary>田無</summary><div class="in"><h3>田無までのアクセス</h3><p style="margin:0">移動ナシ</p><h3 style="margin-top:12px">エリアのポイント</h3><p style="margin:0">駅前商店街には食事処満載！ただ、ホテルが無い・・・。</p></div></details>
+<nav class="pager"><a href="access.html"><b>← 前へ</b>開催地（田無）へのアクセス</a><a class="idx" href="index.html">目次</a><a class="next" href="route.html"><b>次へ →</b>最寄り駅から会場へ</a></nav>
+</main>
+<footer>第23回全国おやじサミットin西東京 参加者用パンフレット（2026年11月22日開催）をスマートフォン向けに再構成</footer>
+<script>
+(function(){
+var lb=document.createElement('div');lb.id='lb';
+lb.innerHTML='<div class="bar"><button data-z="-1" aria-label="縮小">－</button><button data-z="1" aria-label="拡大">＋</button><span id="lbz"></span><div class="sp"></div><button id="lbx">閉じる</button></div><div class="body"><img alt=""></div>';
+document.body.appendChild(lb);
+var body=lb.querySelector('.body'),im=lb.querySelector('img'),zl=document.getElementById('lbz'),z=1,open=false;
+function apply(){im.style.width=(z*100)+'%';zl.textContent=Math.round(z*100)+'%'}
+function show(src){im.onload=function(){z=(window.innerWidth<700&&im.naturalWidth/im.naturalHeight>1.2)?2:1;apply()};im.src=src;z=1;apply();lb.classList.add('on');open=true;body.scrollTo(0,0);history.pushState({lb:1},'')}
+function hide(fromPop){if(!open)return;lb.classList.remove('on');open=false;if(!fromPop&&history.state&&history.state.lb)history.back()}
+document.addEventListener('click',function(e){var t=e.target.closest('img.zoomable');if(t){e.preventDefault();show(t.src)}});
+lb.querySelectorAll('[data-z]').forEach(function(b){b.onclick=function(){z=Math.max(1,Math.min(5,z+(+b.dataset.z)*0.5));apply()}});
+document.getElementById('lbx').onclick=function(){hide(false)};
+window.addEventListener('popstate',function(){hide(true)});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')hide(false)});
+})();
+</script>
+</body></html>
